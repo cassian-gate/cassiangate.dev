@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1020">
+  <title>Cassian Gate v2.0.0 — a deterministic validation gate for network changes</title>
+  <meta name="description" content="Cassian Gate v2.0.0 is the first public release. A deterministic, execution-backed validation gate for network changes.">
+  <link rel="canonical" href="https://cassiangate.dev/announcement-v2.html">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta property="og:title" content="Cassian Gate v2.0.0 — a deterministic validation gate for network changes">
+  <meta property="og:site_name" content="Cassian Gate">
+  <meta property="og:description" content="Cassian Gate v2.0.0 is the first public release. A deterministic, execution-backed validation gate for network changes.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://cassiangate.dev/announcement-v2.html">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Cassian Gate v2.0.0">
+  <meta name="twitter:description" content="A deterministic validation gate for network changes. First public release.">
+  <style>
+    :root {
+      --bg: #0b1020;
+      --text: #e8ecf8;
+      --muted: #8b96b5;
+      --accent: #7cc4ff;
+      --border: #1f2942;
+      --code: #070b1a;
+      --pass: #4ade80;
+      --fail: #f87171;
+      --warn: #fbbf24;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+    code, pre, .mono {
+      font-family: "JetBrains Mono", "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .wrap {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 64px 24px 80px;
+    }
+    .topnav {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      margin-bottom: 40px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    .topnav a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .topnav a:hover { color: var(--accent); }
+    header {
+      margin-bottom: 48px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    .tag {
+      display: inline-block;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      margin-bottom: 20px;
+    }
+    .tag a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .tag a:hover { text-decoration: underline; }
+    h1 {
+      font-size: 1.75rem;
+      line-height: 1.25;
+      margin: 0 0 18px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .lede {
+      font-size: 1rem;
+      color: var(--muted);
+      margin: 0;
+      max-width: 680px;
+    }
+    .lede strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+    .lede em {
+      color: var(--text);
+      font-style: italic;
+    }
+    section {
+      margin: 40px 0;
+    }
+    h2 {
+      font-size: 0.78rem;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      margin: 0 0 16px;
+      font-weight: 500;
+    }
+    p {
+      margin: 14px 0;
+      color: var(--text);
+    }
+    p.muted {
+      color: var(--muted);
+    }
+    .emphasis {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--text);
+      margin: 20px 0;
+    }
+    pre {
+      margin: 14px 0;
+      padding: 16px 18px;
+      background: var(--code);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow-x: auto;
+      color: var(--text);
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+    .output {
+      background: var(--code);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 18px 20px;
+      overflow-x: auto;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 0.82rem;
+      line-height: 1.55;
+      color: var(--text);
+      white-space: pre;
+      margin: 14px 0;
+    }
+    .output .pass { color: var(--pass); font-weight: 600; }
+    .output .fail { color: var(--fail); font-weight: 600; }
+    .output .dim { color: var(--muted); }
+    .output .label { color: var(--accent); }
+    .caption {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin: 10px 0 0;
+    }
+    .caption code {
+      background: var(--code);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      border: 1px solid var(--border);
+    }
+    p code, li code {
+      background: var(--code);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.88rem;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    ul.plain {
+      padding: 0;
+      margin: 14px 0;
+      list-style: none;
+    }
+    ul.plain li {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+    }
+    ul.plain li:last-child { border-bottom: none; }
+    ul.plain li strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+    ul.discussion {
+      padding: 0;
+      margin: 18px 0;
+      list-style: none;
+    }
+    ul.discussion li {
+      padding: 8px 0;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 0.88rem;
+    }
+    ul.discussion li a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    ul.discussion li a:hover { text-decoration: underline; }
+    .scope {
+      border-left: 2px solid var(--warn);
+      padding: 4px 18px;
+      margin: 18px 0;
+    }
+    .scope p {
+      margin: 0;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+    .scope p + p { margin-top: 10px; }
+    .scope p strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+    footer {
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+      margin-top: 64px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--accent); }
+    @media (max-width: 600px) {
+      .wrap { padding: 40px 18px 60px; }
+      h1 { font-size: 1.45rem; }
+      .lede, .emphasis { font-size: 0.95rem; }
+      .output { font-size: 0.76rem; padding: 14px 16px; }
+      pre { font-size: 0.82rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <nav class="topnav">
+      <a href="/">/ home</a>
+      <a href="https://github.com/cassian-gate/cassian-gate">/ repo</a>
+      <a href="https://github.com/cassian-gate/cassian-gate/discussions">/ discussions</a>
+    </nav>
+
+    <header>
+      <div class="tag">announcement &nbsp;·&nbsp; v2.0.0 &nbsp;·&nbsp; <a href="https://github.com/cassian-gate/cassian-gate/releases/tag/v2.0.0">release notes</a></div>
+      <h1>Cassian Gate v2.0.0 — a deterministic validation gate for network changes</h1>
+      <p class="lede">
+        The hardest network failures are not the ones you missed in config review. They are the ones config review could not have caught.
+      </p>
+    </header>
+
+    <section>
+      <p>A configuration can be internally consistent and still be operationally wrong. A failover path can look fine on paper and still converge incorrectly. A route policy can appear correct and still leak or suppress something under real protocol interaction. By the time monitoring tells you there is a problem, you are already in production.</p>
+
+      <p>That is the gap Cassian Gate is built to close.</p>
+
+      <p>Cassian Gate v2.0.0 is the first public release. It is a deterministic, execution-backed validation gate for network changes. It sits between <em>change proposed</em> and <em>change deployed</em>. You declare a topology and the tests and scenarios you care about. Cassian Gate runs them in a controlled environment and returns a binary PASS or FAIL verdict with authoritative artifacts.</p>
+
+      <p class="muted">It is not a static config analysis tool. It is not a monitoring system. It is not an AI system deciding whether your change is safe. It is an execution-backed proof gate.</p>
+    </section>
+
+    <section>
+      <h2>The problem</h2>
+      <p>Network change review still depends heavily on some combination of config review, intent review, peer experience, maintenance-window caution, and post-change monitoring. All of these matter. None of them are the same as proving actual behavior before production.</p>
+      <p>Cassian Gate is built for the question those methods cannot fully answer:</p>
+      <p class="emphasis">Should this change proceed?</p>
+    </section>
+
+    <section>
+      <h2>What Cassian Gate does</h2>
+      <p>You give Cassian Gate a topology, the tests you want to run, and the scenarios you want to exercise (failovers, link outages, grey failures, policy changes). Cassian Gate then:</p>
+      <ul class="plain">
+        <li><strong>Builds the declared environment</strong> using containerlab.</li>
+        <li><strong>Provisions it deterministically</strong> — interfaces, addressing, routing, convergence.</li>
+        <li><strong>Runs the tests and scenarios</strong> you declared.</li>
+        <li><strong>Records expected, observed, verdict, and evidence</strong> for each assertion.</li>
+        <li><strong>Writes authoritative artifacts</strong> — <code>results.json</code>, <code>topology.resolved.yaml</code>, <code>results.summary.txt</code>.</li>
+        <li><strong>Exits cleanly for CI</strong> with a binary PASS or FAIL.</li>
+      </ul>
+      <p>The goal is not interesting simulation. It is explicit pre-deployment proof.</p>
+    </section>
+
+    <section>
+      <h2>Example run</h2>
+      <div class="output"><span class="dim">$ cassian test topologies/first-run-proof-minimal.yaml</span>
+
+<span class="label">[lifecycle]</span> resolve     <span class="pass">ok</span>
+<span class="label">[lifecycle]</span> generate    <span class="pass">ok</span>
+<span class="label">[lifecycle]</span> deploy      <span class="pass">ok</span>   (containerlab, 4 nodes)
+<span class="label">[lifecycle]</span> provision   <span class="pass">ok</span>   (interfaces, addressing, BGP, convergence)
+
+<span class="label">[tests]</span>
+  ping  h1 -> h2                             <span class="pass">PASS</span>
+  tcp   h1 -> h2:8080                        <span class="pass">PASS</span>
+  invariant  bgp_session_up r1<->r2          <span class="pass">PASS</span>
+  invariant  route_present 10.0.2.0/24 on r1 <span class="pass">PASS</span>
+
+<span class="label">[scenarios]</span>
+  primary-path-failover                      <span class="pass">PASS</span>
+    link_down r1<->r2
+    wait_for  bgp_session_up r1<->r3         <span class="pass">converged</span>
+    ping      h1 -> h2                       <span class="pass">PASS</span>
+    link_up   r1<->r2
+
+<span class="pass">RESULT: PASS</span>  (4 tests, 1 scenario, 0 failures)
+<span class="dim">exit 0</span></div>
+      <p class="caption">That output is a UI for humans. The authoritative artifact is <code>results.json</code> — machine-consumable, schema-versioned, and the only thing a CI job should trust for its verdict.</p>
+    </section>
+
+    <section>
+      <h2>What it is</h2>
+      <ul class="plain">
+        <li><strong>Execution-backed.</strong> Cassian Gate validates behavior by running the declared environment and checking what actually happens. Not config text analysis. Not intent graph reasoning.</li>
+        <li><strong>Deterministic.</strong> Same topology, same commit, same verdict. The gate is reproducible from its own artifacts via <code>cassian replay</code>.</li>
+        <li><strong>CI-safe.</strong> Clean-state execution, clean exit codes, authoritative artifacts. Drops into GitHub Actions or GitLab CI as a single job.</li>
+        <li><strong>Narrow.</strong> Cassian Gate v2 validates FRR-based topologies. That means FRR as the routing NOS, plus host and firewall (nftables) nodes. SONiC support is in progress. Arista cEOS support is planned next.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>What it is not</h2>
+      <div class="scope">
+        <p>Cassian Gate does not give you a confidence score, a heuristic safety estimate, or an AI-generated guess. The gate either passes or it does not.</p>
+        <p>Cassian Gate does not auto-remediate, does not replace monitoring, does not run against live infrastructure, and does not claim feature-parity NOS simulation.</p>
+        <p>AI is advisory only — it can explain results or summarize evidence, but AI does not decide pass/fail, alter artifacts, or change execution meaning. That separation is not negotiable.</p>
+      </div>
+      <p class="muted">The narrowness is deliberate. Trust comes from explicit scope and deterministic behavior, not from overclaiming.</p>
+    </section>
+
+    <section>
+      <h2>How to try it</h2>
+      <p>Install:</p>
+      <pre>pipx install cassian-gate</pre>
+      <p>Run the proof kit:</p>
+      <pre>git clone https://github.com/cassian-gate/cassian-gate.git
+cd cassian-gate
+cassian doctor
+cassian test topologies/first-run-proof-minimal.yaml</pre>
+      <p class="muted">First run pulls container images (about 500 MB) and may take several minutes. Subsequent runs complete in under a minute on the proof topologies.</p>
+      <p>To see the gate catch a real failure — a change that looks fine but breaks behavior:</p>
+      <pre>cassian test topologies/first-run-proof-fail-catching.yaml</pre>
+      <p class="muted">That topology is designed to reach a FAIL verdict and produce a clear artifact showing what was caught and why.</p>
+    </section>
+
+    <section>
+      <h2>What's next</h2>
+      <p>v2.0.0 is the foundation. The next work is visible and committed:</p>
+      <ul class="plain">
+        <li><strong>SONiC support</strong> — second NOS. In progress.</li>
+        <li><strong>Arista cEOS support</strong> — planned next, with paid commercial delivery.</li>
+        <li><strong>Deepening the FRR surface</strong> — additional invariants (OSPF, interface state, BGP policy), richer state capture, user-defined invariants.</li>
+        <li><strong>Proof surface improvements</strong> — better invariant failure output, test tags, topology composition.</li>
+      </ul>
+      <p class="muted">The expansion path is deliberate and documented. What the community shapes is the edges — which invariants matter most, where onboarding breaks, what proof recipes convert.</p>
+    </section>
+
+    <section>
+      <h2>Try it and tell us what happened</h2>
+      <p>If you try Cassian Gate, the most valuable thing you can do is tell us what happened — especially if something confused you, broke, or was missing.</p>
+      <ul class="discussion">
+        <li><a href="https://cassiangate.dev">→ cassiangate.dev</a></li>
+        <li><a href="https://github.com/cassian-gate/cassian-gate">→ github.com/cassian-gate/cassian-gate</a></li>
+        <li><a href="https://github.com/cassian-gate/cassian-gate/releases/tag/v2.0.0">→ v2.0.0 release notes</a></li>
+        <li><a href="https://github.com/cassian-gate/cassian-gate/discussions">→ discussions</a></li>
+        <li><a href="https://github.com/cassian-gate/cassian-gate/blob/v2.0.0/topologies/first-run-proof-minimal.yaml">→ proof kit (passing)</a></li>
+        <li><a href="https://github.com/cassian-gate/cassian-gate/blob/v2.0.0/topologies/first-run-proof-fail-catching.yaml">→ proof kit (fail-catching)</a></li>
+      </ul>
+      <p class="muted">Friction reports, missing invariants, topology authoring pain, and "the docs did not explain X" are all valuable. If you run Cassian Gate in CI against a real change and it catches something, that is the kind of signal that shapes what gets built next.</p>
+    </section>
+
+    <footer>
+      <span>cassiangate.dev</span>
+      <a href="/">back to home</a>
+      <a href="https://github.com/cassian-gate/cassian-gate">source</a>
+    </footer>
+  </main>
+</body>
+</html>
