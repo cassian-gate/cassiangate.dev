@@ -214,11 +214,14 @@
 <body>
   <main class="wrap">
     <header>
-      <div class="tag">v2.0.2 &nbsp;·&nbsp; <a href="https://github.com/cassian-gate/cassian-gate/releases/tag/v2.0.2">release notes</a> &nbsp;·&nbsp; <a href="https://docs.cassiangate.dev/">docs</a></div>
+      <div class="tag">v2.1 &nbsp;·&nbsp; <a href="https://github.com/cassian-gate/cassian-gate/releases/tag/v2.1.0">release notes</a> &nbsp;·&nbsp; <a href="https://docs.cassiangate.dev/latest/">docs</a></div>
       <h1>Cassian Gate</h1>
       <p class="subhead">A deterministic validation gate for network changes</p>
       <p class="lede">
         Runs your proposed change in a controlled environment, asserts real network behavior, and returns <strong>PASS</strong> or <strong>FAIL</strong> — with auditable artifacts you can attach to a PR or CI job.
+      </p>
+      <p class="release-banner" style="margin-top: 14px; padding: 10px 14px; background: rgba(124, 196, 255, 0.08); border-left: 2px solid var(--accent); border-radius: 4px; font-size: 0.95rem;">
+        <strong>New — v2.1 is out:</strong> actionable failure output, user-defined invariants, +2 BGP invariants. <a href="https://docs.cassiangate.dev/latest/blog/v2-1-release/">What's new →</a>
       </p>
     </header>
 
@@ -226,32 +229,39 @@
       <h2>Example run</h2>
       <div class="output"><span class="dim">$ cassian test topologies/first-run-proof-minimal.yaml</span>
 
-<span class="label">[lifecycle]</span> resolve     <span class="pass">ok</span>
-<span class="label">[lifecycle]</span> generate    <span class="pass">ok</span>
-<span class="label">[lifecycle]</span> deploy      <span class="pass">ok</span>   (containerlab, 4 nodes)
-<span class="label">[lifecycle]</span> provision   <span class="pass">ok</span>   (interfaces, addressing, BGP, convergence)
-
-<span class="label">[tests]</span>
-  ping  h1 -> h2                             <span class="pass">PASS</span>
-  tcp   h1 -> h2:8080                        <span class="pass">PASS</span>
-  invariant  bgp_session_up r1<->r2          <span class="pass">PASS</span>
-  invariant  route_present 10.0.2.0/24 on r1 <span class="pass">PASS</span>
-
-<span class="label">[scenarios]</span>
-  primary-path-failover                      <span class="pass">PASS</span>
-    link_down r1<->r2
-    wait_for  bgp_session_up r1<->r3         <span class="pass">converged</span>
-    ping      h1 -> h2                       <span class="pass">PASS</span>
-    link_up   r1<->r2
-
-<span class="label">[artifacts]</span>
-  artifacts/2026-04-24_1142/results.json
-  artifacts/2026-04-24_1142/topology.resolved.yaml
-  artifacts/2026-04-24_1142/results.summary.txt
-
-<span class="pass">RESULT: PASS</span>  (4 tests, 1 scenario, 0 failures)
-<span class="dim">exit 0</span></div>
+<span class="dim">MODE: GATE | AUTHORITATIVE: YES | CLEAN-STATE: YES | DESTROY: YES | LIFECYCLE: RESOLVE&gt;GENERATE&gt;DEPLOY&gt;PROVISION&gt;TEST&gt;COLLECT&gt;DESTROY</span>
+<span class="dim">NOTICE: This run may require sudo for container networking.</span>
+<span class="dim">────────────────────────────────────────</span>
+<span class="label">Cassian Gate Result</span>
+<span class="dim">────────────────────────────────────────</span>
+Lab: first-run-proof-minimal
+Authority: GATE (authoritative)
+Mode: gate (clean-state topology)
+Prereqs executed: 0
+Declared tests executed: 1
+Scenarios executed: 0
+Execution: full lifecycle through test (collect+destroy still executed)
+<span class="pass">RESULT: PASS</span>
+Tests:
+ - <span class="pass">PASS</span> h1_tcp_8443_to_h2_pass
+TOTAL: 1
+PASS: 1
+FAIL: 0
+SKIP: 0
+EXIT: 0
+<span class="pass">✅ Declared tests PASS (1 checks)</span>
+<span class="pass">✅ TEST PASS: containers running + checks OK</span>
+<span class="dim">Lab: first-run-proof-minimal
+Action: destroy runtime
+RESULT: DESTROYED
+OK  first-run-proof-minimal: destroyed
+Lab lifecycle: DESTROYED</span>
+<span class="dim">Artifacts: labs/clab-first-run-proof-minimal/
+  - topology.resolved.yaml (generated execution model used for execution; non-authoritative)
+  - results.json (authoritative verdict artifact)
+  - results.summary.txt (human-readable summary only; non-authoritative)</span></div>
       <p class="caption">Every run writes <code>results.json</code>. That file is the authoritative artifact — not the terminal output.</p>
+      <p class="note">Run from a clone of the repository (see <a href="#try-it">Try it</a> below) — <code>topologies/</code> ships in the repo, not the <code>pipx</code> wheel.</p>
     </section>
 
     <section>
@@ -260,7 +270,7 @@
     </section>
 
     <section>
-      <h2>Try it</h2>
+      <h2 id="try-it">Try it</h2>
       <pre>git clone https://github.com/cassian-gate/cassian-gate.git
 cd cassian-gate
 cassian doctor
@@ -280,10 +290,21 @@ cassian test topologies/first-run-proof-minimal.yaml</pre>
     </section>
 
     <section>
+      <h2>Latest release — v2.1</h2>
+      <ul class="plain">
+        <li><strong>Actionable failure output, guaranteed.</strong> <span>Every failed invariant now renders the observed state that made it fail; every rejected input says what was wrong, where, and what would be valid — straight from the deterministic engine, no AI surface required.</span></li>
+        <li><strong>User-defined invariants.</strong> <span>Declare your own check as a read-only command plus a typed assertion, run through the same verdict machinery as a built-in.</span></li>
+        <li><strong>More BGP coverage.</strong> <span>New <code>bgp_community</code> and <code>bgp_as_path</code> invariants bring the built-in catalog to fifteen types.</span></li>
+        <li><strong>Tagged runs, audit-grade evidence, brownfield importer.</strong> <span>Selective execution with <code>cassian test --tag</code>, tamper-checkable <code>results.json</code> fields, and an offline first-importer for NetBox-derived topologies.</span></li>
+      </ul>
+      <p class="note">Full write-up: <a href="https://docs.cassiangate.dev/latest/blog/v2-1-release/">What's new in v2.1 →</a></p>
+    </section>
+
+    <section>
       <h2>Scope — v2</h2>
       <div class="scope">
         <p>
-          <strong>Cassian Gate v2 validates FRR-based topologies.</strong> SONiC support is in progress. Arista cEOS support is planned next. The engine is runtime-agnostic by design, but supported NOS today means FRR plus host and firewall nodes.
+          <strong>Cassian Gate v2 validates FRR-based topologies — FRR plus host and firewall nodes.</strong> The engine is runtime-agnostic by design; <strong>SONiC is the next NOS (Phase 2)</strong>, scoped by a strategic reassessment before it begins.
         </p>
         <p>
           Cassian Gate does not auto-remediate, does not replace monitoring, does not run against live infrastructure, and does not use AI for pass/fail decisions. AI is advisory only.
@@ -294,12 +315,12 @@ cassian test topologies/first-run-proof-minimal.yaml</pre>
     <section>
       <h2>Links</h2>
       <div class="links">
-        <a href="/announcement-v2.html">Announcement post →</a>
-        <a href="https://github.com/cassian-gate/cassian-gate">GitHub repo →</a>
-        <a href="https://docs.cassiangate.dev/">Documentation →</a>
-        <a href="https://github.com/cassian-gate/cassian-gate/releases/tag/v2.0.2">v2.0.2 release →</a>
+        <a href="https://github.com/cassian-gate/cassian-gate">GitHub repository →</a>
+        <a href="https://docs.cassiangate.dev/latest/">Documentation →</a>
+        <a href="https://docs.cassiangate.dev/latest/quickstart/">Getting started →</a>
+        <a href="https://docs.cassiangate.dev/latest/blog/v2-1-release/">v2.1 release post →</a>
+        <a href="https://docs.cassiangate.dev/latest/scope-discipline/">Scope discipline →</a>
         <a href="https://github.com/cassian-gate/cassian-gate/discussions">Discussions →</a>
-        <a href="https://docs.cassiangate.dev/latest/quickstart/">Quickstart →</a>
       </div>
     </section>
 
